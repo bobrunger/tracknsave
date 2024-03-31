@@ -1,0 +1,19 @@
+{
+    "name": "andrey/tracknsave",
+    "description": "Expenses tracker",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Andrey"
+        }
+    ],
+    "require": {
+
+    },
+    "autoload": {
+        "psr-4": {
+            "Framework\\": "src/Framework",
+            "App\\": "src/App"
+        }
+    }
+}
