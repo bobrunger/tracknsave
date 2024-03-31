@@ -6,6 +6,6 @@ namespace Framework;
 
 class App {
     public function run() {
-        echo "app is running";
+        echo "app is running !";
     }
 }
