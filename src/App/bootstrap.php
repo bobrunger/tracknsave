@@ -5,14 +5,12 @@ declare(strict_types=1);
 require __DIR__ . "/../../vendor/autoload.php";
 
 use Framework\App;
-use App\Controllers\HomeController;
+use function App\Config\{registerRoutes, registerMiddleware};
+use App\Config\Paths;
 
-
-$app = new App();
-
-//$app->get('/', ['App\Controllers\HomeController', 'home']); // register homecontroller, "GET" method add to router
-//wrapping value in array - after instance created , next step run the method for displaying the pages contents
-$app->get('/', [HomeController::class, 'home']); // helps avoid typos
-
+$app = new App(Paths::SOURCE . "app/container-definitions.php");
+// composer does not support autoload for functions, only classes, manually tell composer to load file
+registerRoutes($app);
+registerMiddleware($app);
 
 return $app;
