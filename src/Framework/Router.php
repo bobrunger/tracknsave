@@ -10,11 +10,15 @@ class Router {
 
     public function add(string $method, string $path, array $controller) {
         $path = $this->normalizePath($path);
+
+        $regexPath = preg_replace('#{[^/]+}#', '([^/]+)', $path);
+
         $this->routes[] = [
             'path' => $path,
             'method' => strtoupper($method),
             'controller' => $controller,
-            'middlewares' => []
+            'middlewares' => [],
+            'regexPath' => $regexPath
         ];
     }
     //    /about/blabla/
@@ -27,21 +31,31 @@ class Router {
 
     public function dispatch(string $path, string $method, Container $container = null) {
         $path = $this->normalizePath($path);
-        $method = strtoupper($method);
+        $method = strtoupper($_POST['_METHOD'] ?? $method);
 
 
         foreach ($this->routes as $route) {
-            if (!preg_match("#^{$route['path']}$#", $path) || $route['method'] !== $method) {
+            if (!preg_match("#^{$route['regexPath']}$#", $path, $paramValues) || $route['method'] !== $method) {
                 //echo 'not found';
 
                 continue;
             }
 
+            array_shift($paramValues);
+
+            preg_match_all('#{([^/]+)}#', $route['path'], $paramKeys);
+
+            $paramKeys = $paramKeys[1];
+
+            $params = array_combine($paramKeys, $paramValues);
+
+
             //echo 'route found';
             [$class, $function] = $route["controller"]; // route is array of class name and method
             $controllerInstance = $container ?
                 $container->resolve($class) : new $class; // class name have full namespace such as App\Controllers\HomeController
-            $action = fn () => $controllerInstance->$function(); // eg home() method
+
+            $action = fn () => $controllerInstance->{$function}($params); // eg home() method
 
             $allMiddleware = [...$route['middlewares'], ...$this->middlewares];
 
