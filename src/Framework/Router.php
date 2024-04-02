@@ -13,7 +13,8 @@ class Router {
         $this->routes[] = [
             'path' => $path,
             'method' => strtoupper($method),
-            'controller' => $controller
+            'controller' => $controller,
+            'middlewares' => []
         ];
     }
     //    /about/blabla/
@@ -42,7 +43,9 @@ class Router {
                 $container->resolve($class) : new $class; // class name have full namespace such as App\Controllers\HomeController
             $action = fn () => $controllerInstance->$function(); // eg home() method
 
-            foreach ($this->middlewares as $middleware) {
+            $allMiddleware = [...$route['middlewares'], ...$this->middlewares];
+
+            foreach ($allMiddleware as $middleware) {
                 $middlewareInstance = $container ? $container->resolve($middleware) : new $middleware;
                 $action = fn () => $middlewareInstance->process($action); // controller will be last class to execute
             }
@@ -55,5 +58,10 @@ class Router {
 
     public function addMiddleware(string $middleware) {
         $this->middlewares[] = $middleware;
+    }
+
+    public function addRouteMiddleware(string $middleware) {
+        $lastRouteKey = array_key_last($this->routes);
+        $this->routes[$lastRouteKey]['middlewares'][] = $middleware;
     }
 }
